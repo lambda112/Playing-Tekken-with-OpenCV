@@ -1,8 +1,10 @@
 import cv2 as cv
 import numpy as np
 import time
+import pydirectinput
 
 # load cascade
+time.sleep(3)
 face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
 cap = cv.VideoCapture(0)
 ret, current_frame = cap.read()
@@ -11,28 +13,32 @@ previous_frame = current_frame
 top_left = (0,0)
 bottom_right = (0,0)
 
-# Initialize cooldown tracking for each button
+# Initialize cooldown tracking for each buttonxzazxx
 button_cooldowns = {0: time.time(), 1: time.time(), 2: time.time(), 3: time.time()}
 COOLDOWN = 2  # Cooldown period in seconds
 
 def perform_action(id):
+    #xzsa
     if id == 0:
         print("button 0 pressed")
+        pydirectinput.press("x")
 
     if id == 1:
         print("button 1 pressed")
+        pydirectinput.press("z")
 
     if id == 2:
         print("button 2 pressed")
+        pydirectinput.press("s")
 
     if id == 3:
         print("button 3 pressed")
+        pydirectinput.press("a")
 
     current_time = time.time()
 
 
 def draw_buttons(x, y, current_gray, previous_gray):
-    global start_time
     buttons = [
         ((x + 200, y + 100), (x + 300, y + 200)), # button 0
         ((x - 200, y + 100), (x - 100, y+200)), # button 1
@@ -95,12 +101,12 @@ while True:
 
     cv.imshow("Face Detection", current_frame)
     if cv.waitKey(1) == ord("q"):
-        cv.destroyAllWindows()
         break
 
     previous_frame = current_frame.copy()
     ret, current_frame = cap.read()
 
+cv.destroyAllWindows()
 cap.release()
 
-
+x
