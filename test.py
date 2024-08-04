@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 import time
 import direct_input as pydirectinput
+import threading
 from button_config import button_block
 
 PADDING = 0
@@ -43,16 +44,18 @@ def find_nonzero_num(topl_y, botr_y, topl_x, botr_x, current_frame, previous_fra
     return non_zero
 
 def perform_action(states: dict, action):
-    pydirectinput.PAUSE = 0.03
+    pydirectinput.PAUSE = 0.01
     button_true = {k:v for k,v in states.items() if v == True}
     action = {k:action[k] for k,v in button_true.items()}    
     action = list(action.values())
-    pydirectinput.hotkey(*action)
+
+    pydirectinput.hotkey(interval=0.5, *action)
+    print(button_true)
     
 def draw_buttons(x, y, current_frame, previous_frame, face_topl, face_botr):
     buttons = button_block(x,y, "old")
     button_state = {0: False, 1: False, 2: False, 3: False, 4:False, 5:False}
-    button_action = ["j", "i", "k", "l", "a", "d"]
+    BUTTON_ACTION = ["j", "i", "k", "l", "a", "d"]
     frame_height, frame_width, _ = current_frame.shape
 
     for index, (topl, botr) in buttons.items():
@@ -87,9 +90,8 @@ def draw_buttons(x, y, current_frame, previous_frame, face_topl, face_botr):
                         button_state[index] = False
                 
     print(" ")
-    perform_action(button_state, button_action)    
-    button_state = {0: False, 1: False, 2: False, 3: False, 4:False, 5:False}
-             
+    threading.Thread(target = perform_action, args=(button_state, BUTTON_ACTION)).start()
+    button_state = {0: False, 1: False, 2: False, 3: False, 4:False, 5:False}          
 
 while True:
     current_frame = cv.flip(current_frame, 1)

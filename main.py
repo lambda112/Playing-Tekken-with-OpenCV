@@ -43,7 +43,7 @@ def find_nonzero_num(topl_y, botr_y, topl_x, botr_x, current_frame, previous_fra
     return non_zero
 
 def perform_action(index, is_pressed = False):
-    pydirectinput.PAUSE = 0.03
+    pydirectinput.PAUSE = 0
     if is_pressed:
         if index == 4:
             pydirectinput.press("a")

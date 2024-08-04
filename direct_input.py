@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import ctypes
 import functools
 import inspect
@@ -585,6 +586,9 @@ def hotkey(*args, **kwargs):
     Returns:
       None
     """
+    interval = float(kwargs.get("interval", 0.0))
+    bool = float(kwargs.get("bool", False))
+
     if len(args) and isinstance(args[0], list) and not isinstance(args[0], str):
         # Let the user pass a list of strings
         args = tuple(args[0])
@@ -593,11 +597,46 @@ def hotkey(*args, **kwargs):
         if len(c) > 1:
             c = c.lower()
         keyDown(c)
+        time.sleep(interval)
         
     for c in reversed(args):
         if len(c) > 1:
             c = c.lower()
         keyUp(c)
+        time.sleep(interval)
 
+    shortcut = hotkey  # shortcut() is an alias for htotkey()
 
-shortcut = hotkey  # shortcut() is an alias for htotkey()
+@contextmanager
+@_genericPyDirectInputChecks
+def hold(keys, logScreenshot=None, _pause=True):
+    """Context manager that performs a keyboard key press down upon entry,
+    followed by a release upon exit.
+
+    Args:
+      key (str, list): The key to be pressed. The valid names are listed in
+      KEYBOARD_KEYS. Can also be a list of such strings.
+      pause (float, optional): How many seconds in the end of function process.
+      None by default, for no pause in the end of function process.
+    Returns:
+      None
+    """
+    if type(keys) == str:
+        if len(keys) > 1:
+            keys = keys.lower()
+        keys = [keys]  # If keys is 'enter', convert it to ['enter'].
+    else:
+        lowerKeys = []
+        for s in keys:
+            if len(s) > 1:
+                lowerKeys.append(s.lower())
+            else:
+                lowerKeys.append(s)
+        keys = lowerKeys
+    for k in keys:
+        failSafeCheck()
+    try:
+        yield
+    finally:
+        for k in keys:
+            failSafeCheck()
