@@ -13,13 +13,13 @@ time.sleep(1)
 
 ret, current_frame = cap.read()
 previous_frame = current_frame.copy()
-
 top_left = (0,0)
 bottom_right = (0,0)
 x,y,w,h = 0,0,0,0
 
 # Initialize cooldown tracking for each buttons
 button_cooldowns = {0: time.time(), 1: time.time(), 2: time.time(), 3: time.time(), 4:time.time(), 5:time.time()}
+
 COOLDOWN = 2  # Cooldown period in seconds
 
 def find_nonzero_num(topl_y, botr_y, topl_x, botr_x, current_frame, previous_frame):
@@ -42,25 +42,20 @@ def find_nonzero_num(topl_y, botr_y, topl_x, botr_x, current_frame, previous_fra
     non_zero = np.count_nonzero(threshold)
     return non_zero
 
-def perform_action(index, is_pressed = False):
+def perform_action(states: dict, action):
     pydirectinput.PAUSE = 0.03
-    if is_pressed:
-        if index == 4:
-            pydirectinput.press("a")
-        if index == 5:
-            pydirectinput.press("d")
+    button_true = {k:v for k,v in states.items() if v == True}
+    action = {k:action[k] for k,v in button_true.items()}    
+    action = list(action.values())
+    pydirectinput.hotkey(*action)
     
-    if index < 4:
-        action = [lambda: pydirectinput.press("j", interval=0), lambda: pydirectinput.press("i", interval=0), lambda: pydirectinput.press("k", interval=0), lambda: pydirectinput.press("l", interval=0)]
-        action[index]()
-    
-
 def draw_buttons(x, y, current_frame, previous_frame, face_topl, face_botr):
     buttons = button_block(x,y, "old")
-
+    button_state = {0: False, 1: False, 2: False, 3: False, 4:False, 5:False}
+    button_action = ["j", "i", "k", "l", "a", "d"]
     frame_height, frame_width, _ = current_frame.shape
 
-    for index, (topl, botr) in enumerate(buttons):
+    for index, (topl, botr) in buttons.items():
         topl_x = max(0, topl[0])
         topl_y = max(0, topl[1])
         botr_x = min(frame_width, botr[0])
@@ -69,34 +64,36 @@ def draw_buttons(x, y, current_frame, previous_frame, face_topl, face_botr):
         if topl_x < botr_x and topl_y < botr_y: 
             cv.rectangle(current_frame, (topl_x, topl_y), (botr_x, botr_y), (255, 0, 255) if index > 4 else (255,0,0), 2, cv.LINE_4)
             cv.putText(current_frame, f"button{index}", (topl_x+20,topl_y+90) if index < 4 else (topl_x,topl_y-5), cv.FONT_HERSHEY_COMPLEX,0.6,(0,255,0), 1)
-
             non_zero = find_nonzero_num(topl_y, botr_y, topl_x, botr_x, current_frame, previous_frame)
-            button_pressed = False
-            
-            if index < 4:
-                print(non_zero, index)
 
             if non_zero > 1000:
+                button_state[index] = True
                 cv.rectangle(current_frame, (topl_x, topl_y), (botr_x, botr_y), (0, 255, 0) if index < 4 else (255, 0, 255), 2, cv.LINE_4)
         
                 if index == 4:
                     # left
                     if face_topl[0] < botr_x:
-                        button_pressed = True
+                        button_state[index] = True
                         cv.rectangle(current_frame, (topl_x, topl_y), (botr_x, botr_y), (0, 255, 255), lineType=cv.LINE_4)
+                    else:
+                        button_state[index] = False
                     
                 if index == 5:
                     # right
                     if face_botr[0] > topl_x:
-                        button_pressed = True
+                        button_state[index] = True
                         cv.rectangle(current_frame, (topl_x, topl_y), (botr_x, botr_y), (0, 255, 255), lineType=cv.LINE_4)
-
-                perform_action(index, button_pressed)
+                    else:
+                        button_state[index] = False
+                
+    print(" ")
+    perform_action(button_state, button_action)    
+    button_state = {0: False, 1: False, 2: False, 3: False, 4:False, 5:False}
              
 
 while True:
     current_frame = cv.flip(current_frame, 1)
-    faces = face_cascade.detectMultiScale(current_frame, 1.1, 4, minSize=(10,10), maxSize=(400,400))
+    faces = face_cascade.detectMultiScale(current_frame, 1.1, 3, minSize=(40,40), maxSize=(400,400))
 
     if len(faces):    
         for (x, y, w, h) in faces:
