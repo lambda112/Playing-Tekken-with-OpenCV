@@ -539,16 +539,12 @@ def press(keys, presses=1, interval=0.0, logScreenshot=None, _pause=True):
     expectedPresses = presses * len(keys)
     completedPresses = 0
 
-    for i in range(presses):
-        for k in keys:
-            failSafeCheck()
-            downed = keyDown(k)
-            upped = keyUp(k)
-            # Count key press as complete if key was "downed" and "upped" successfully
-            if downed and upped:
-                completedPresses += 1
+    for k in keys:
+        failSafeCheck()
+        keyDown(k)
+        keyUp(k)
 
-        time.sleep(interval)
+    time.sleep(interval)
 
     return completedPresses == expectedPresses
 
@@ -593,17 +589,17 @@ def hotkey(*args, **kwargs):
         # Let the user pass a list of strings
         args = tuple(args[0])
 
-    for c in args:
-        if len(c) > 1:
-            c = c.lower()
-        keyDown(c)
-        time.sleep(interval)
+    if bool == True:
+        for c in args:
+            if len(c) > 1:
+                c = c.lower()
+            keyDown(c)
         
-    for c in reversed(args):
-        if len(c) > 1:
-            c = c.lower()
-        keyUp(c)
-        time.sleep(interval)
+    if bool == False:
+        for c in reversed(args):
+            if len(c) > 1:
+                c = c.lower()
+            keyUp(c)
 
     shortcut = hotkey  # shortcut() is an alias for htotkey()
 

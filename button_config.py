@@ -7,6 +7,8 @@ def button_block(x,y, button_type = "top"):
             3:((x - 150, y - 150), (x - 50, y - 50)), # button 3
             4:((0, 0), (0 + 240, y)), # button 4
             5:((x - 240, 0), (x, y)), # button 5
+            6:((0, (y // 2) + 30), (x, (y // 2) + 30)), # button 6
+            7:((0, (y // 2) - 50), (x, (y // 2) - 50)) # button 7
         }
 
     buttons_full_body = {
